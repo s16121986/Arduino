@@ -1,5 +1,6 @@
 _*
-tmp/
-temp/
-archive/
+dump
+tmp
+temp
+archive
 Arduino/folders.code-workspace
