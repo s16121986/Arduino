@@ -1,4 +1,8 @@
 #define DEBUG_PORT
+#define MODBUS_DEBUG
+
+#include <Modbus.h>
+#include <MsTimer2.h>
 
 #define SLAVE_ID       72
 #define PIN_TX          2
@@ -7,21 +11,13 @@
 #define PIN_COLD_CTRL   5
 #define PIN_HOT_CTRL    6
 #define PIN_HOT_POWER   7
+#define PIN_BT_LEAK     8 //Датчик протечки ванная
+#define PIN_KH_LEAK     9 //Датчик протечки кухня
 
 unsigned int CURRENT_TIME;
-unsigned long int GIDROLOCK_OPEN_DELAY = 1500; //Время поворота шарового крана на 90 градусов 15 sec
 
-//#include <stdint.h> //value types
-#include "lib/Gidrolock.cpp"
-
-Gidrolock motorCold(PIN_COLD_POWER, PIN_COLD_CTRL);
-Gidrolock motorHot(PIN_HOT_POWER, PIN_HOT_CTRL);
-
-#include "lib/Controller.cpp"
-
-#include <Modbus.h>
-#include "lib/Master.cpp"
-#include <MsTimer2.h>
+#include "Controller/Controller.cpp"
+#include "Modbus/Modbus.cpp"
 
 void listen() {
 	CURRENT_TIME = millis();
@@ -31,15 +27,12 @@ void listen() {
 void setup() {
 	CURRENT_TIME = millis();
 
-	pinMode(PIN_COLD_POWER, OUTPUT);
-	pinMode(PIN_COLD_CTRL, OUTPUT);
-	pinMode(PIN_HOT_POWER, OUTPUT);
-	pinMode(PIN_HOT_CTRL, OUTPUT);
+	pinMode(PIN_BT_LEAK, INPUT);
+	pinMode(PIN_KH_LEAK, INPUT);
 
-	Modbus::setup(SLAVE_ID, PIN_TX);
-	Modbus::begin(9600);
+	Modbus::setup();
 	//Serial.begin(9600);
-	while(!Serial);
+	while (!Serial);
 #ifdef DEBUG_PORT
 	Serial.println("//setup");
 #endif
@@ -48,11 +41,10 @@ void setup() {
 
 	MsTimer2::set(40, listen);
 	MsTimer2::start();
-
-	Master::setup();
 }
 
 void loop() {
-	Master::loop();
-	//Controller::loop();
+	Modbus::loop();
+
+	Controller::loop();
 }
