@@ -6,9 +6,9 @@ namespace Servo{
 
 	void rotate(unsigned short int angle) {
     	for (unsigned char i = 0; i < 40; i++) {
-    	    digitalWrite(PIN_SERVO, HIGH);
+    	    digitalWrite(PIN_WC_SERVO, HIGH);
     		delayMicroseconds(angle);
-    	    digitalWrite(PIN_SERVO, LOW);
+    	    digitalWrite(PIN_WC_SERVO, LOW);
     		delay(15);
     	}
 	}
@@ -18,10 +18,10 @@ namespace Servo{
 #endif
 		rotate(ANGLE_DOWN);
 		upFlag = false;
-		digitalWrite(PIN_TEST, LOW);
+		//digitalWrite(PIN_TEST, LOW);
 	}
 	void up() {
-		digitalWrite(PIN_TEST, HIGH);
+		//digitalWrite(PIN_TEST, HIGH);
 #ifdef DEBUG_PORT
 		Serial.println("servo up");
 #endif

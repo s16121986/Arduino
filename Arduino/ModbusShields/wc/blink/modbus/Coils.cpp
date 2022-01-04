@@ -1,24 +1,23 @@
-namespace Coils{
+namespace Modbus{ namespace Coils{
+	//using namespace WC;
+
 	enum REGISTERS{
-        ENABLED,
-        HALF_FLUSH,
-        FULL_FLUSH,
+        WC_ENABLED,
+        WC_HALF_FLUSH,
+        WC_FULL_FLUSH,
+        FLOWERS_LIGHT,
+        FLOWERS_IRRIGATE,
 
-        REGISTERS_SIZE,
-        FLAGS_SIZE = 1
+        REGISTERS_SIZE
     };
 
-    bool coilsFlags[FLAGS_SIZE] = {
-        true //ENABLED
-    };
-
-	uint8_t count() { return REGISTERS_SIZE; }
-	void setFlag(uint16_t address, bool flag) {
-		if (address < FLAGS_SIZE)
-			coilsFlags[address] = flag;
+	void setup() {
+		modbusListener.registerCoilRead(WC_ENABLED, WC::isEnabled);
+		modbusListener.registerCoilWrite(WC_ENABLED, WC::setEnabled);
+		modbusListener.registerCoilWrite(WC_HALF_FLUSH, WC::halfFlush);
+		modbusListener.registerCoilWrite(WC_FULL_FLUSH, WC::fullFlush);
+		modbusListener.registerCoilWrite(FLOWERS_IRRIGATE, Flowers::irrigate);
+		modbusListener.registerCoilWrite(FLOWERS_LIGHT, Flowers::light);
 	}
-	bool hasFlag(uint16_t address) { return address < FLAGS_SIZE; }
-	bool getFlag(uint16_t address) { return coilsFlags[address]; }
-	bool has(uint16_t address) { return address < REGISTERS_SIZE; }
 
-}
+} }

@@ -1,36 +1,53 @@
 //KGS-812A
+#define IR_EVENT_LEFT_TIME 20000
+
 namespace IR{
-	using namespace HoldingRegisters;
+    uint16_t EVENT_TIMEOUT = 500;
 
 	bool disabledFlag = false;
+
 	bool detectedFlag = false;
+
 	bool currentState = false;
+
 	bool eventDetected = false;
+
 	bool eventLeft = false;
+
 	unsigned long int barrierTime = 0;
+
 	unsigned long int eventDelayTime = 0;
 
 	void reset();
 
 	bool disabled() { return disabledFlag; }
+
 	void disable() { disabledFlag = true; }
+
 	void enable() { disabledFlag = false; }
-	bool getState() { return digitalRead(PIN_IR); }
+
+	bool getState() { return digitalRead(PIN_WC_IR); }
+
 	bool isBarrier() { return currentState == true; }
+
 	bool isFree() { return currentState == false; }
+
 	bool onDetect() {
 		if (disabledFlag || !eventDetected)
 			return false;
 		eventDetected = false;
 		return true;
 	}
+
 	bool onLeft() {
 		if (disabledFlag || !eventLeft)
 			return false;
 		eventLeft = false;
 		return true;
 	}
+
 	unsigned long int getBarrierTime() { return barrierTime; }
+
 	void reset() {
 		detectedFlag = false;
 		currentState = false;
@@ -39,6 +56,7 @@ namespace IR{
 		barrierTime = 0;
 		eventDelayTime = 0;
 	}
+
 	void listen() {
 		if (disabledFlag || eventLeft)//
 			return;
@@ -49,20 +67,20 @@ namespace IR{
 			if (!isBarrier())
 				return;
 			//если был более Х секунд запуск таймера до смыва
-			if (eventDelayTime > 0 && CURRENT_TIME - eventDelayTime > registersValues[IR_EVENT_TIMEOUT]) {
+			if (eventDelayTime > 0 && CURRENT_TIME - eventDelayTime > EVENT_TIMEOUT) {
                 eventLeft = true;
                // barrierTime = 0;
                 //eventDelayTime = 0;
 #ifdef DEBUG_PORT
             	Serial.println("ir left event");
 #endif
-            } else if (barrierTime > 0 && !detectedFlag && CURRENT_TIME - barrierTime > registersValues[FLUSH_HALF_TIME]) {
+            }/* else if (barrierTime > 0 && !detectedFlag && CURRENT_TIME - barrierTime > getFlushHalfTime()) {
                 detectedFlag = true;
                 eventDetected = true;
 #ifdef DEBUG_PORT
                 Serial.println("ir detected");
 #endif
-            }
+            }*/
 		} else {
 			currentState = state;
 
@@ -75,8 +93,8 @@ namespace IR{
                 if (0 == barrierTime)
                     barrierTime = CURRENT_TIME;
             //Если человек ушел
-            } else if (barrierTime > 0 && CURRENT_TIME - barrierTime > registersValues[FLUSH_HALF_TIME]) {
-                if (registersValues[IR_EVENT_TIMEOUT] == 0)
+            } else if (barrierTime > 0 && CURRENT_TIME - barrierTime > IR_EVENT_LEFT_TIME) {
+                if (EVENT_TIMEOUT == 0)
                     eventLeft = true;
                 else {
                     eventDelayTime = CURRENT_TIME; //если был более Х секунд запуск таймера до смыва

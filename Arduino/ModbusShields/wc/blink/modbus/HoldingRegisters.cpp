@@ -1,67 +1,78 @@
-namespace HoldingRegisters{
+namespace Modbus{ namespace HoldingRegisters{
+	using namespace Modbus;
+	using namespace ModbusClientUtil;
+
 	enum REGISTERS{
-		FLUSH_HALF_DELAY, //Время неполного смыва
-		FLUSH_FULL_DELAY, //Время полного смыва
-        FLUSH_HALF_TIME, //Время нахождения для неполного смыва
-        FLUSH_FULL_TIME, //Время нахождения для полного смыва
-        IR_EVENT_TIMEOUT, //Пауза перед авто смывом
-        IR_MODE,
-        SOUND_MODE,
+		WC_FLUSH_HALF_DELAY, //Время неполного смыва
+		WC_FLUSH_FULL_DELAY, //Время полного смыва
+        WC_FLUSH_HALF_TIME, //Время нахождения для неполного смыва
+        WC_FLUSH_FULL_TIME, //Время нахождения для полного смыва
+        WC_IR_EVENT_TIMEOUT, //Пауза перед авто смывом
+        WC_IR_MODE,
+        WC_SOUND_MODE,
+		FLOWERS_IRRIGATE_DELAY, //Время автополива
+		FLOWERS_LIGHT_BRIGHTNESS,
+		FLOWERS_SOIL_HUMIDITY,
         //
         REGISTERS_SIZE
 	};
 
-	uint16_t registersValues[REGISTERS_SIZE] = {
-		1000, //FLUSH_HALF_DELAY
-    	2500, //FLUSH_FULL_DELAY
-    	20000, //FLUSH_HALF_TIME
-    	60000, //FLUSH_FULL_TIME
-    	500, //IR_EVENT_TIMEOUT
-		1, //IR_MODE
-		0 //SOUND_MODE
-	};
+	uint16_t getFlushHalfDelay() { return msToUint16(WC::FLUSH_HALF_DELAY); }
 
-	uint8_t count() { return REGISTERS_SIZE; }
-	uint16_t get(uint16_t address) { return registersValues[address]; }
-	void set(uint16_t address, uint16_t value) {
-		registersValues[address] = value;
-	}
-	bool has(uint16_t address) { return address < REGISTERS_SIZE; }
+	uint16_t getFlushFullDelay() { return msToUint16(WC::FLUSH_FULL_DELAY); }
 
-	uint16_t msFromUint16(uint16_t value) { return value * 10; }
-	uint16_t secFromUint16(uint16_t value) { return value * 1000; }
-	uint16_t msToUint16(uint16_t value) { return value / 10; }
-	uint16_t secToUint16(uint16_t value) { return value / 1000; }
-	uint16_t getVariable(uint16_t address) {
-		uint16_t value = get(address);
-		switch (address) {
-            case FLUSH_HALF_DELAY:
-            case FLUSH_FULL_DELAY:
-            case IR_EVENT_TIMEOUT:
-                return msToUint16(value);
-            case FLUSH_HALF_TIME:
-            case FLUSH_FULL_TIME:
-                return secToUint16(value);
-            default:
-                return value;
-        }
-	}
-	void setVariable(uint16_t address, uint16_t value) {
-		uint16_t setValue;
-		switch (address) {
-            case FLUSH_HALF_DELAY:
-            case FLUSH_FULL_DELAY:
-            case IR_EVENT_TIMEOUT:
-                setValue = msFromUint16(value);
-                break;
-            case FLUSH_HALF_TIME:
-            case FLUSH_FULL_TIME:
-                setValue = secFromUint16(value);
-                break;
-            default:
-                setValue = value;
-        }
-		set(address, setValue);
-	}
+	uint16_t getIrEventTimeout() { return msToUint16(IR::EVENT_TIMEOUT); }
 
-}
+	uint16_t getFlushHalfTime() { return secToUint16(WC::FLUSH_HALF_TIME); }
+
+	uint16_t getFlushFullTime() { return secToUint16(WC::FLUSH_FULL_TIME); }
+
+	uint16_t getIrMode() { return WC::IR_MODE; }
+
+	uint16_t getSoundMode() { return WC::SOUND_MODE; }
+
+	uint16_t getFlowersIrrigateDelay() { return msToUint16(Flowers::IRRIGATE_DELAY); }
+
+	uint16_t getFlowersLightBrightness() { return Flowers::LIGHT_BRIGHTNESS; }
+
+	void setFlushHalfDelay(uint16_t value) { WC::FLUSH_HALF_DELAY = msFromUint16(value); }
+
+	void setFlushFullDelay(uint16_t value) { WC::FLUSH_FULL_DELAY = msFromUint16(value); }
+
+	void setFlushHalfTime(uint16_t value) { WC::FLUSH_HALF_TIME = secFromUint16(value); }
+
+	void setFlushFullTime(uint16_t value) { WC::FLUSH_FULL_TIME = secFromUint16(value); }
+
+	void setIrEventTimeout(uint16_t value) { IR::EVENT_TIMEOUT = msFromUint16(value); }
+
+	void setIrMode(uint16_t value) { WC::IR_MODE = value; }
+
+	void setSoundMode(uint16_t value) { WC::SOUND_MODE = value; }
+
+	void setFlowersIrrigateDelay(uint16_t value) { Flowers::IRRIGATE_DELAY = msFromUint16(value); }
+
+	void setup() {
+		modbusListener.registerHoldingRegisterRead(WC_FLUSH_HALF_DELAY, getFlushFullTime);
+		modbusListener.registerHoldingRegisterRead(WC_FLUSH_HALF_DELAY, getFlushHalfDelay);
+		modbusListener.registerHoldingRegisterRead(WC_FLUSH_FULL_DELAY, getFlushFullDelay);
+		modbusListener.registerHoldingRegisterRead(WC_FLUSH_HALF_TIME, getFlushHalfTime);
+		modbusListener.registerHoldingRegisterRead(WC_FLUSH_FULL_TIME, getFlushFullTime);
+		modbusListener.registerHoldingRegisterRead(WC_IR_EVENT_TIMEOUT, getIrEventTimeout);
+		modbusListener.registerHoldingRegisterRead(WC_IR_MODE, getIrMode);
+		modbusListener.registerHoldingRegisterRead(WC_SOUND_MODE, getSoundMode);
+		modbusListener.registerHoldingRegisterRead(FLOWERS_IRRIGATE_DELAY, getFlowersIrrigateDelay);
+		modbusListener.registerHoldingRegisterRead(FLOWERS_LIGHT_BRIGHTNESS, getFlowersLightBrightness);
+		modbusListener.registerHoldingRegisterRead(FLOWERS_SOIL_HUMIDITY, Flowers::getSoilHumidity);
+
+		modbusListener.registerHoldingRegisterWrite(WC_FLUSH_HALF_DELAY, setFlushFullTime);
+		modbusListener.registerHoldingRegisterWrite(WC_FLUSH_HALF_DELAY, setFlushHalfDelay);
+		modbusListener.registerHoldingRegisterWrite(WC_FLUSH_FULL_DELAY, setFlushFullDelay);
+		modbusListener.registerHoldingRegisterWrite(WC_FLUSH_HALF_TIME, setFlushHalfTime);
+		modbusListener.registerHoldingRegisterWrite(WC_FLUSH_FULL_TIME, setFlushFullTime);
+		modbusListener.registerHoldingRegisterWrite(WC_IR_EVENT_TIMEOUT, setIrEventTimeout);
+		modbusListener.registerHoldingRegisterWrite(WC_IR_MODE, setIrMode);
+		modbusListener.registerHoldingRegisterWrite(WC_SOUND_MODE, setSoundMode);
+		modbusListener.registerHoldingRegisterWrite(FLOWERS_IRRIGATE_DELAY, setFlowersIrrigateDelay);
+		modbusListener.registerHoldingRegisterWrite(FLOWERS_LIGHT_BRIGHTNESS, Flowers::setBrightness);
+	}
+} }

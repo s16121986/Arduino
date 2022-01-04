@@ -1,20 +1,25 @@
+#include "../Entities/IR.cpp"
+#include "../Entities/Servo.cpp"
+#include "../Entities/Button.cpp"
+
 #define INACTIVE_DELAY 4000 //
 #define RESET_TIMEOUT 1000 //
 
-namespace Controller{
-	using namespace HoldingRegisters;
+namespace WC{
+
+	uint16_t FLUSH_HALF_DELAY = 1000;
+    uint16_t FLUSH_FULL_DELAY = 2500;
+    uint16_t FLUSH_HALF_TIME = 20000;
+    uint16_t FLUSH_FULL_TIME = 60000;
+    uint16_t IR_MODE = 1;
+    uint16_t SOUND_MODE = 0;
 
 	bool disabledFlag = false;
-	bool busyFlag = false;
-	unsigned long int lastActiveTime = 0;
-	Button btn(PIN_SWITCH);
 
-	void activity(bool flag) {
-		if (flag)
-			lastActiveTime = CURRENT_TIME;
-		else
-			lastActiveTime = 0;
-	}
+	bool busyFlag = false;
+
+	Button btn(PIN_WC_SWITCH);
+
 	void reset() {
 		btn.reset();
         IR::reset();
@@ -23,27 +28,27 @@ namespace Controller{
         Serial.println("controller reset");
 #endif
 	}
+
 	void reset(unsigned int timeout) {
 		delay(timeout);
         reset();
-        activity(true);
 	}
+
 	void busy(bool flag) { busyFlag = flag; }
-	bool disabled() { return disabledFlag; }
+
+	bool isEnabled() { return !disabledFlag; }
+
 	void disable() { disabledFlag = true; }
+
 	void enable() { disabledFlag = false; }
+
 	void setEnabled(bool flag) {
-		//Coils::setFlag(Coils::ENABLED, flag);
-#ifdef DEBUG_PORT
-        Serial.print("setEnabled (");
-        Serial.print(flag);
-        Serial.println(")");
-#endif
 		if (flag)
             enable();
         else
             disable();
 	}
+
 	void flush(unsigned int timeout) {
 #ifdef DEBUG_PORT
         Serial.print("flush (");
@@ -57,9 +62,13 @@ namespace Controller{
 
         reset(RESET_TIMEOUT);
 	}
-	void flush() { flush(registersValues[FLUSH_HALF_DELAY]); }
-	void halfFlush() { flush(registersValues[FLUSH_HALF_DELAY]); }
-	void fullFlush() { flush(registersValues[FLUSH_FULL_DELAY]); }
+
+	void flush() { flush(FLUSH_HALF_DELAY); }
+
+	void halfFlush() { flush(FLUSH_HALF_DELAY); }
+
+	void fullFlush() { flush(FLUSH_FULL_DELAY); }
+
 	bool processBtn() {
 		if (!btn.onPress())
 			return false;
@@ -72,7 +81,7 @@ namespace Controller{
 #ifdef DEBUG_PORT
 			Serial.println("btn released");
 #endif
-			delay(registersValues[FLUSH_HALF_DELAY] - 200);
+			delay(FLUSH_HALF_DELAY - 200);
 		} else { //Удержание (отключение при отжатии)
 #ifdef DEBUG_PORT
 			Serial.println("btn holded");
@@ -88,34 +97,30 @@ namespace Controller{
 
 		return true;
 	}
-	bool isActive() { return IR::getState() || btn.getState(); }
-	bool isInactive() { return lastActiveTime > 0 && (CURRENT_TIME - lastActiveTime) > INACTIVE_DELAY; }
+
 	void listen() {
 		if (disabledFlag)
 			return;
 
 		btn.listen();
-#ifdef PIN_IR
-		if (registersValues[IR_MODE] > 0)
+		if (IR_MODE)
 			IR::listen();
-#endif
 	}
+
 	void loop() {
 		if (disabledFlag || busyFlag || processBtn())
 			return;
 
-#ifdef PIN_IR
-		if (registersValues[IR_MODE]) {
+		if (IR_MODE) {
 			if (IR::onLeft()) {
 				IR::disable();
-                if (IR::getBarrierTime() > registersValues[FLUSH_FULL_TIME])
+                if (IR::getBarrierTime() > FLUSH_HALF_TIME)
                     fullFlush();
                 else
                     halfFlush();
 				IR::enable();
-            } else if (registersValues[SOUND_MODE] && IR::onDetect())
-                tone(PIN_SOUND, registersValues[SOUND_MODE] * 100, 700);
+            }/* else if (SOUND_MODE && IR::onDetect())
+                tone(PIN_SOUND, SOUND_MODE * 100, 700);*/
 		}
-#endif
 	}
 }
