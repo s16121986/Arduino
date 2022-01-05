@@ -3,7 +3,6 @@ namespace Modbus{ namespace Coils{
 
 	enum REGISTERS{
         ALARM_STATE,
-
         GIDROLOCK_HOT_STATE,
         GIDROLOCK_COLD_STATE,
 
@@ -19,11 +18,14 @@ namespace Modbus{ namespace Coils{
     void setColdState(bool flag) { return Controller::motorCold.setState(flag); }
 
 	void setup() {
-		modbusListener.registerCoilRead(ALARM_STATE, Controller::alarmState);
+		modbusListener.registerCoilRead(ALARM_STATE, Controller::isAlarm);
 		modbusListener.registerCoilRead(GIDROLOCK_HOT_STATE, getHotState);
 		modbusListener.registerCoilRead(GIDROLOCK_COLD_STATE, getColdState);
+
+		modbusListener.registerCoilWrite(ALARM_STATE, Controller::alarmState);
 		modbusListener.registerCoilWrite(GIDROLOCK_HOT_STATE, setHotState);
 		modbusListener.registerCoilWrite(GIDROLOCK_COLD_STATE, setColdState);
+
 	}
 
 } }

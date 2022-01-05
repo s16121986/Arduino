@@ -1,4 +1,5 @@
 #Климат контроллер
+https://wirenboard.com/wiki/WB-MS_v_2_registers
 
 ##Управление RS485
 

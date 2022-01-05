@@ -27,7 +27,9 @@ public:
 		if (disabledFlag)
 			return stop();
 #ifdef DEBUG_PORT
-		Serial.println("open start");
+		Serial.print("open start (");
+		Serial.print(GIDROLOCK_OPEN_DELAY);
+		Serial.println(")");
 #endif
 		power(false);
 		//control(true);
@@ -38,7 +40,9 @@ public:
 		if (disabledFlag)
 			return stop();
 #ifdef DEBUG_PORT
-		Serial.println("close start");
+		Serial.print("close start (");
+		Serial.print(GIDROLOCK_OPEN_DELAY);
+		Serial.println(")");
 #endif
 		power(true);
 		//control(false);

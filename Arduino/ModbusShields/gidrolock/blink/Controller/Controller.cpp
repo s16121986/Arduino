@@ -1,4 +1,4 @@
-unsigned long int GIDROLOCK_OPEN_DELAY = 1500; //Время поворота шарового крана на 90 градусов 15 sec
+unsigned long int GIDROLOCK_OPEN_DELAY = 15000; //Время поворота шарового крана на 90 градусов 15 sec
 
 #include "../Entities/Gidrolock.cpp"
 
@@ -8,28 +8,48 @@ namespace Controller{
 
 	Gidrolock motorHot(PIN_HOT_POWER, PIN_HOT_CTRL);
 
-	bool alarmState = false;
+	volatile bool alarmFlag = false;
 
-	bool isAlarm() { return alarmState; }
+	bool isAlarm() {
+		Serial.print("isAlarm ");
+		Serial.print(alarmFlag);
+		Serial.println();
+		return alarmFlag;
+	}
 
 	void alarm() {
-		alarmState = true;
+#ifdef DEBUG_PORT
+		Serial.println("alarm");
+#endif
+		alarmFlag = true;
 		motorCold.close();
 		motorHot.close();
 	}
 
-	void d() {
-		alarmState = false;
+	void open() {
+#ifdef DEBUG_PORT
+		Serial.println("open");
+#endif
+		alarmFlag = false;
         motorCold.open();
         motorHot.open();
 	}
 
 	void alarmState(bool flag) {
-		alarmState = flag;
+		if (flag)
+			alarm();
+		else
+			open();
 	}
 
-	void loop() {
+	void listen() {
+		motorCold.listen();
+		motorHot.listen();
+
+		if (alarmFlag)
+			return;
+
 		if (digitalRead(PIN_BT_LEAK) == HIGH || digitalRead(PIN_KH_LEAK) == HIGH)
-			leakAlarm();
+			alarm();
 	}
 }

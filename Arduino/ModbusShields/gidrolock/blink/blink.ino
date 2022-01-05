@@ -7,17 +7,17 @@
 #define SLAVE_ID       72
 #define PIN_TX          2
 
-#define PIN_COLD_POWER  4
-#define PIN_COLD_CTRL   5
-#define PIN_HOT_CTRL    6
-#define PIN_HOT_POWER   7
-#define PIN_BT_LEAK     8 //Датчик протечки ванная
-#define PIN_KH_LEAK     9 //Датчик протечки кухня
+#define PIN_BT_LEAK     3 //Датчик протечки ванная
+#define PIN_KH_LEAK     4 //Датчик протечки кухня
+#define PIN_COLD_POWER  5
+#define PIN_COLD_CTRL   6
+#define PIN_HOT_CTRL    7
+#define PIN_HOT_POWER   8
 
 unsigned int CURRENT_TIME;
 
-#include "Controller/Controller.cpp"
-#include "Modbus/Modbus.cpp"
+#include "./Controller/Controller.cpp"
+#include "./Modbus/Modbus.cpp"
 
 void listen() {
 	CURRENT_TIME = millis();
@@ -46,5 +46,5 @@ void setup() {
 void loop() {
 	Modbus::loop();
 
-	Controller::loop();
+	//Controller::loop();
 }

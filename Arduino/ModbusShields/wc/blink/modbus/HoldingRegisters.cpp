@@ -62,7 +62,6 @@ namespace Modbus{ namespace HoldingRegisters{
 		modbusListener.registerHoldingRegisterRead(WC_SOUND_MODE, getSoundMode);
 		modbusListener.registerHoldingRegisterRead(FLOWERS_IRRIGATE_DELAY, getFlowersIrrigateDelay);
 		modbusListener.registerHoldingRegisterRead(FLOWERS_LIGHT_BRIGHTNESS, getFlowersLightBrightness);
-		modbusListener.registerHoldingRegisterRead(FLOWERS_SOIL_HUMIDITY, Flowers::getSoilHumidity);
 
 		modbusListener.registerHoldingRegisterWrite(WC_FLUSH_HALF_DELAY, setFlushFullTime);
 		modbusListener.registerHoldingRegisterWrite(WC_FLUSH_HALF_DELAY, setFlushHalfDelay);
@@ -74,5 +73,7 @@ namespace Modbus{ namespace HoldingRegisters{
 		modbusListener.registerHoldingRegisterWrite(WC_SOUND_MODE, setSoundMode);
 		modbusListener.registerHoldingRegisterWrite(FLOWERS_IRRIGATE_DELAY, setFlowersIrrigateDelay);
 		modbusListener.registerHoldingRegisterWrite(FLOWERS_LIGHT_BRIGHTNESS, Flowers::setBrightness);
+
+		modbusListener.registerInputRegisterRead(FLOWERS_SOIL_HUMIDITY, Flowers::getSoilHumidity);
 	}
 } }
