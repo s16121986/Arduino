@@ -1,5 +1,5 @@
 namespace Modbus {
-	ModbusClient modbus(SLAVE_ID, PIN_TX);
+	ModbusClient modbus(&RS485Serial, SLAVE_ID);
 	ModbusListener modbusListener(&modbus);
 }
 

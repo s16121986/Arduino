@@ -6,7 +6,6 @@ namespace Modbus{ namespace Coils{
         WC_HALF_FLUSH,
         WC_FULL_FLUSH,
         FLOWERS_LIGHT,
-        FLOWERS_IRRIGATE,
 
         REGISTERS_SIZE
     };
@@ -16,7 +15,6 @@ namespace Modbus{ namespace Coils{
 		modbusListener.registerCoilWrite(WC_ENABLED, WC::setEnabled);
 		modbusListener.registerCoilWrite(WC_HALF_FLUSH, WC::halfFlush);
 		modbusListener.registerCoilWrite(WC_FULL_FLUSH, WC::fullFlush);
-		modbusListener.registerCoilWrite(FLOWERS_IRRIGATE, Flowers::irrigate);
 		modbusListener.registerCoilWrite(FLOWERS_LIGHT, Flowers::light);
 	}
 

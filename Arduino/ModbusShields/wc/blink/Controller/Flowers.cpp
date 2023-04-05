@@ -1,35 +1,26 @@
 #include "../Entities/Irrigation.cpp"
 
 namespace Flowers{
-	uint16_t IRRIGATE_DELAY = 12;
 	uint8_t LIGHT_BRIGHTNESS = 255;
 
 	bool busyFlag = false;
 	bool lightState = false;
 
-	void irrigate() {
+	void irrigate(uint16_t timeout) {
 		if (busyFlag)
-			return;
+    		return;
 
-#ifdef DEBUG_PORT
+    #ifdef DEBUG_PORT
         Serial.print("irrigation (");
-        Serial.print(IRRIGATE_DELAY);
+        Serial.print(timeout);
         Serial.println(")");
-#endif
-    	busyFlag = true;
-    	Irrigation::start();
-        delay(IRRIGATE_DELAY);
-		Irrigation::stop();
+    #endif
+        busyFlag = true;
+        Irrigation::start();
+        delay(timeout);
+        Irrigation::stop();
 
-		busyFlag = false;
-        //reset(RESET_TIMEOUT);
-	}
-
-	void irrigate(bool flag) {
-		if (flag)
-    	    irrigate();
-    	else
-    	    Irrigation::stop();
+        busyFlag = false;
 	}
 
 	uint16_t getSoilHumidity() {
@@ -41,7 +32,7 @@ namespace Flowers{
 		if (LIGHT_BRIGHTNESS >= 255)
 			digitalWrite(PIN_FL_LIGHT, HIGH);
 		else
-			analogWrite(LIGHT_BRIGHTNESS, LIGHT_BRIGHTNESS);
+			analogWrite(PIN_FL_LIGHT, LIGHT_BRIGHTNESS);
 	}
 
 	void lightOff() {

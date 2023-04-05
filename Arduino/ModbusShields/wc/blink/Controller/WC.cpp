@@ -73,6 +73,9 @@ namespace WC{
 		if (!btn.onPress())
 			return false;
 
+#ifdef DEBUG_PORT
+		Serial.println("processBtn()");
+#endif
     	busyFlag = true;
 
 		Servo::up();
@@ -113,6 +116,9 @@ namespace WC{
 
 		if (IR_MODE) {
 			if (IR::onLeft()) {
+#ifdef DEBUG_PORT
+                Serial.println("IR::onLeft()");
+#endif
 				IR::disable();
                 if (IR::getBarrierTime() > FLUSH_HALF_TIME)
                     fullFlush();

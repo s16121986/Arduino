@@ -4,81 +4,39 @@ ModbusClient::ModbusClient() {
 	flush();
 }
 
-ModbusClient::ModbusClient(uint8_t _slaveID, uint8_t _TxEnablePin, uint8_t u8serno) {
-	ModbusClient();
-	setup(_slaveID, _TxEnablePin, u8serno);
-}
-
-ModbusClient::ModbusClient(uint8_t _slaveID, uint8_t _TxEnablePin) {
-	ModbusClient();
-	setup(_slaveID, _TxEnablePin, 0);
-}
-
-void ModbusClient::setup(uint8_t _slaveID, uint8_t _TxEnablePin, uint8_t u8serno) {
-	switch (u8serno) {
-#if defined(UBRR1H)
-	case 1:
-		port = &Serial1;
-		break;
-#endif
-
-#if defined(UBRR2H)
-	case 2:
-		port = &Serial2;
-		break;
-#endif
-
-#if defined(UBRR3H)
-	case 3:
-		port = &Serial3;
-		break;
-#endif
-	case 0:
-	default:
-		port = &Serial;
-		break;
-	}
-
+void ModbusClient::setup(Stream& port, uint8_t _slaveID) {
+	this->port = &port;
 	slaveID = _slaveID;
-	TxEnablePin = _TxEnablePin;
-	//Request req();
 	errorCount = 0;
-
-	pinMode(TxEnablePin, OUTPUT);
-	digitalWrite(TxEnablePin, LOW);
 }
-
-void ModbusClient::setup(uint8_t _slaveID, uint8_t _TxEnablePin) { setup(_slaveID, _TxEnablePin, 0); }
 
 void ModbusClient::begin(long baud) {
-	static_cast<HardwareSerial*>(port)->begin(baud);
+	//static_cast<SoftwareSerial*>(port)->begin(baud);
+	//port->begin(baud);
+
 	// Modbus states that a baud rate higher than 19200 must use a fixed 750 us
-	// for inter character time out and 1.75 ms for a frame delay.
-	// For baud rates below 19200 the timeing is more critical and has to be calculated.
-	// E.g. 9600 baud in a 10 bit packet is 960 characters per second
-	// In milliseconds this will be 960characters per 1000ms. So for 1 character
-	// 1000ms/960characters is 1.04167ms per character and finaly modbus states an
-	// intercharacter must be 1.5T or 1.5 times longer than a normal character and thus
-	// 1.5T = 1.04167ms * 1.5 = 1.5625ms. A frame delay is 3.5T.
-	// Added experimental low latency delays. This makes the implementation
-	// non-standard but practically it works with all major modbus master implementations.
+    // for inter character time out and 1.75 ms for a frame delay.
+    // For baud rates below 19200 the timeing is more critical and has to be calculated.
+    // E.g. 9600 baud in a 10 bit packet is 960 characters per second
+    // In milliseconds this will be 960characters per 1000ms. So for 1 character
+    // 1000ms/960characters is 1.04167ms per character and finaly modbus states an
+    // intercharacter must be 1.5T or 1.5 times longer than a normal character and thus
+    // 1.5T = 1.04167ms * 1.5 = 1.5625ms. A frame delay is 3.5T.
+    // Added experimental low latency delays. This makes the implementation
+    // non-standard but practically it works with all major modbus master implementations.
 
-	/*if (baud == 1000000 && _lowLatency) {
-		T1_5 = 1;
-		T3_5 = 10;
-	} else if (baud >= 115200 && _lowLatency){
-		T1_5 = 75;
-		T3_5 = 175;
-	} else */if (baud > 19200) {
-		T1_5 = 750;
-		T3_5 = 1750;
-	}
-	else {
-		T1_5 = 15000000 / baud; // 1T * 1.5 = T1.5
-		T3_5 = 35000000 / baud; // 1T * 3.5 = T3.5
-	}
+    if (baud > 19200) {
+        T1_5 = 750;
+        T3_5 = 1750;
+    } else {
+        T1_5 = 15000000 / baud; // 1T * 1.5 = T1.5
+        T3_5 = 35000000 / baud; // 1T * 3.5 = T3.5
+    }
 
-	while (port->read() >= 0);
+    while (port->read() >= 0);
+#ifdef MODBUS_DEBUG
+    Serial.println("port started");
+#endif
 }
 
 bool ModbusClient::error(uint8_t code = 0) {
@@ -102,7 +60,7 @@ bool ModbusClient::available() {
 	bufferSize = 0;
 
 #ifdef MODBUS_DEBUG
-	//Serial.print("Modbus.available: ");
+	Serial.print("Modbus.available: ");
 #endif
 	while (port->available()) {
 		// The maximum number of bytes is limited to the serial buffer size of 128 bytes
@@ -115,14 +73,17 @@ bool ModbusClient::available() {
 				overflow = 1;
 			buffer[bufferSize] = port->read();
 #ifdef MODBUS_DEBUG
-			/*Serial.print("[");
-			Serial.print(buffer[bufferSize]);
-			Serial.print("]");*/
+			/**/Serial.print("[");
+			Serial.print(buffer[bufferSize], HEX);
+			Serial.print("]");
 #endif
 			bufferSize++;
 		}
 		delayMicroseconds(T1_5); // inter character time out
 	}
+#ifdef MODBUS_DEBUG
+	Serial.println();
+#endif
 
 	disabledFlag = false;
 
@@ -139,13 +100,11 @@ bool ModbusClient::available() {
 	//validate request
 	uint16_t crc = toUint16(buffer[bufferSize - 2], buffer[bufferSize - 1]); // combine the crc Low & High bytes
 	if (CRC16(buffer, bufferSize - 2) != crc) {
-		sendException(ILLEGAL_DATA_VALUE); // corrupted packet
+		//sendException(ILLEGAL_DATA_VALUE); // corrupted packet
 		return false;
 	}
 	//else if (disabled)
 	//	return exception(SLAVE_DEVICE_BUSY);
-
-	broadcastFlag = buffer[ID] == 0;
 
 #ifdef MODBUS_DEBUG
 	Serial.print("RX: ");
@@ -171,7 +130,7 @@ void ModbusClient::flush() {
 	buffer[1] = 0;
 }
 
-bool ModbusClient::isBroadcast() { return broadcastFlag; };
+bool ModbusClient::isBroadcast() { return buffer[ID] == 0; };
 
 bool ModbusClient::isEmpty() { return buffer[1] == 0; };
 
@@ -189,26 +148,30 @@ uint16_t ModbusClient::getByte(uint8_t pos) { return buffer[BYTE_CNT + pos]; }
 
 void ModbusClient::sendResponse(uint8_t* frame, uint8_t frameSize) {
 	if (!isBroadcast()) {// don't respond if its a broadcast message
-		port->flush();
+		disabledFlag = true;
+    	//delayMicroseconds(T3_5);
+		//port->flush();
 
-    	digitalWrite(TxEnablePin, HIGH);
+    	//digitalWrite(TxEnablePin, HIGH);
 
     	addCRC(frame, frameSize);
     	frameSize += 2;
 
-    	for (uint8_t i = 0; i < frameSize; i++)
-    		port->write(frame[i]);
+    	for (uint8_t i = 0; i < frameSize; i++) {
+    	   port->write(frame[i]);
+    	}
 
-    	port->flush();
+    	//port->flush();
 
     	// allow a frame delay to indicate end of transmission
     	delayMicroseconds(T3_5);
 
-    	digitalWrite(TxEnablePin, LOW);
+    	//digitalWrite(TxEnablePin, LOW);
+		disabledFlag = false;
 
 #ifdef MODBUS_DEBUG
-    	Serial.print("TX (buffer=");
-    	Serial.print(bufferSize);
+    	Serial.print("TX (");
+    	Serial.print(frameSize);
     	Serial.print("): ");
     	for (uint8_t i = 0; i < frameSize; i++) {
     		Serial.print("<");
@@ -224,6 +187,11 @@ void ModbusClient::sendResponse(uint8_t* frame, uint8_t frameSize) {
 
 void ModbusClient::sendException(uint8_t errorCode) {
 	errorCount++; // each call to exceptionResponse() will increment the errorCount
+	if (isBroadcast()) {
+		flush();
+		return;
+	}
+
 	uint8_t frame[MODBUS_BUFFER_SIZE];
 	frame[0] = buffer[0];
 	frame[1] = buffer[1] | 0x80;
@@ -283,6 +251,13 @@ void ModbusClient::sendFC5(uint16_t regAdd, uint16_t reqState) {
 	addUint16Value(frame, regAdd, 2);
 	addUint16Value(frame, reqState, 4);
 	sendResponse(frame, 6);
+#ifdef MODBUS_DEBUG
+    Serial.print("Modbus.sendFC5: ");
+    Serial.print(regAdd);
+    Serial.print(",");
+    Serial.print(reqState);
+    Serial.println();
+#endif
 }
 
 void ModbusClient::sendFC6(uint16_t regAdd, uint16_t reqVal) { sendFC5(regAdd, reqVal); }

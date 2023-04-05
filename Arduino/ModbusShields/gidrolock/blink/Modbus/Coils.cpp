@@ -25,7 +25,6 @@ namespace Modbus{ namespace Coils{
 		modbusListener.registerCoilWrite(ALARM_STATE, Controller::alarmState);
 		modbusListener.registerCoilWrite(GIDROLOCK_HOT_STATE, setHotState);
 		modbusListener.registerCoilWrite(GIDROLOCK_COLD_STATE, setColdState);
-
 	}
 
 } }

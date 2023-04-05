@@ -15,7 +15,7 @@ public:
 	WriteListener<bool> writeCoilListener;
 	WriteListener<uint16_t> writeRegisterListener;
 
-	ModbusListener(ModbusClient* modbus);
+	ModbusListener(ModbusClient& modbus);
 
 	void registerCoilRead(uint16_t reqAdd, uint16_t (*f)());
 

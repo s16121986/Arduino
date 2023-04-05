@@ -1,7 +1,7 @@
 using namespace ModbusClientUtil;
 
-ModbusListener::ModbusListener(ModbusClient* _modbus) {
-	modbus = _modbus;
+ModbusListener::ModbusListener(ModbusClient& _modbus) {
+	modbus = &_modbus;
 }
 
 void ModbusListener::registerCoilRead(uint16_t reqAdd, rfunc f) { readCoilListener.bind(reqAdd, f); }

@@ -1,14 +1,3 @@
-Adafruit*
-ArduinoModbus
-ArduinoRS485
-Bridge
-DHT_sensor_library
-Ethernet
-Firmata
-IRremote
-Keyboard
-MsTimer2
-SD
-Servo
-SpacebrewYun
-tmp
+*
+!/Modbus
+!/Home

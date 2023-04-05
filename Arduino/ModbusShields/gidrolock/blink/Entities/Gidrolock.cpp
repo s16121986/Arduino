@@ -59,7 +59,7 @@ public:
 	void listen() {
 		if (0 == powerTime)
 			return;
-		if (CURRENT_TIME - powerTime > GIDROLOCK_OPEN_DELAY)
+		else if (CURRENT_TIME - powerTime > GIDROLOCK_OPEN_DELAY)
 			stop();
 	}
 private:

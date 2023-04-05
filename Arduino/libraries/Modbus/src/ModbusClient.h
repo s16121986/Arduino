@@ -2,13 +2,7 @@ class ModbusClient {
 public:
 	ModbusClient();
 
-	ModbusClient(uint8_t _slaveID, uint8_t _TxEnablePin, uint8_t u8serno);
-
-	ModbusClient(uint8_t _slaveID, uint8_t _TxEnablePin);
-
-	void setup(uint8_t _slaveID, uint8_t _TxEnablePin, uint8_t u8serno);
-
-	void setup(uint8_t _slaveID, uint8_t _TxEnablePin);
+	void ModbusClient::setup(Stream& port, uint8_t _slaveID);
 
 	void begin(long baud);
 

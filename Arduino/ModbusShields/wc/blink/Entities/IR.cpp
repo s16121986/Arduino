@@ -1,18 +1,17 @@
 //KGS-812A
 #define IR_EVENT_LEFT_TIME 20000
+#define IR_EVENT_TIMEOUT 500
 
 namespace IR{
-    uint16_t EVENT_TIMEOUT = 500;
-
 	bool disabledFlag = false;
 
-	bool detectedFlag = false;
+	//bool detectedFlag = false;
 
 	bool currentState = false;
 
-	bool eventDetected = false;
+	//bool eventDetected = false;
 
-	bool eventLeft = false;
+	volatile bool eventLeft = false;
 
 	unsigned long int barrierTime = 0;
 
@@ -32,16 +31,19 @@ namespace IR{
 
 	bool isFree() { return currentState == false; }
 
-	bool onDetect() {
+	/*bool onDetect() {
 		if (disabledFlag || !eventDetected)
 			return false;
 		eventDetected = false;
 		return true;
-	}
+	}*/
 
 	bool onLeft() {
 		if (disabledFlag || !eventLeft)
 			return false;
+#ifdef DEBUG_PORT
+            	Serial.println("ir onLeft()");
+#endif
 		eventLeft = false;
 		return true;
 	}
@@ -49,12 +51,15 @@ namespace IR{
 	unsigned long int getBarrierTime() { return barrierTime; }
 
 	void reset() {
-		detectedFlag = false;
+		//detectedFlag = false;
 		currentState = false;
-		eventDetected = false;
+		//eventDetected = false;
 		eventLeft = false;
 		barrierTime = 0;
 		eventDelayTime = 0;
+#ifdef DEBUG_PORT
+            	Serial.println("ir reset()");
+#endif
 	}
 
 	void listen() {
@@ -64,16 +69,13 @@ namespace IR{
 		bool state = getState();
 
 		if (currentState == state) {
-			if (!isBarrier())
+			if (isBarrier())
 				return;
 			//если был более Х секунд запуск таймера до смыва
-			if (eventDelayTime > 0 && CURRENT_TIME - eventDelayTime > EVENT_TIMEOUT) {
+			if (eventDelayTime > 0 && CURRENT_TIME - eventDelayTime > IR_EVENT_TIMEOUT) {
                 eventLeft = true;
                // barrierTime = 0;
                 //eventDelayTime = 0;
-#ifdef DEBUG_PORT
-            	Serial.println("ir left event");
-#endif
             }/* else if (barrierTime > 0 && !detectedFlag && CURRENT_TIME - barrierTime > getFlushHalfTime()) {
                 detectedFlag = true;
                 eventDetected = true;
@@ -87,26 +89,30 @@ namespace IR{
 			//Если обнаружен человек запуск таймера
 			if (isBarrier()) {
 #ifdef DEBUG_PORT
-            	Serial.println("Barrier");
+            	Serial.print("Barrier (");
+            	Serial.print(IR_EVENT_LEFT_TIME);
+            	Serial.println(")");
 #endif
                 eventDelayTime = 0;
                 if (0 == barrierTime)
                     barrierTime = CURRENT_TIME;
             //Если человек ушел
             } else if (barrierTime > 0 && CURRENT_TIME - barrierTime > IR_EVENT_LEFT_TIME) {
-                if (EVENT_TIMEOUT == 0)
-                    eventLeft = true;
-                else {
-                    eventDelayTime = CURRENT_TIME; //если был более Х секунд запуск таймера до смыва
 #ifdef DEBUG_PORT
-            	Serial.println("ir event timer");
+				Serial.println("ir event timer");
 #endif
-				}
+#ifdef IR_EVENT_TIMEOUT
+                eventDelayTime = CURRENT_TIME; //если был более Х секунд запуск таймера до смыва
+#else
+                eventLeft = true;
+#endif
             } else {
-                reset(); //если был менее Х секунд сброс
 #ifdef DEBUG_PORT
-            	Serial.println("ir reset");
+            	Serial.print("ir reset (");
+            	Serial.print(CURRENT_TIME - barrierTime);
+            	Serial.println(")");
 #endif
+                reset(); //если был менее Х секунд сброс
 			}
 		}
 	}

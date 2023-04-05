@@ -1,8 +1,11 @@
 #define DEBUG_PORT
 #define MODBUS_DEBUG
 
+#include <SoftwareSerial.h>
 #include <Modbus.h>
 #include <MsTimer2.h>
+
+SoftwareSerial RS485Serial(10, 11);
 
 #define SLAVE_ID       72
 #define PIN_TX          2
@@ -27,15 +30,24 @@ void listen() {
 void setup() {
 	CURRENT_TIME = millis();
 
-	pinMode(PIN_BT_LEAK, INPUT);
-	pinMode(PIN_KH_LEAK, INPUT);
+	//pinMode(PIN_BT_LEAK, INPUT);
+	//pinMode(PIN_KH_LEAK, INPUT);
 
-	Modbus::setup();
-	//Serial.begin(9600);
+	//RS485Serial.begin(9600);
+	//Modbus::setup();
+
+	Serial.begin(9600);
 	while (!Serial);
 #ifdef DEBUG_PORT
 	Serial.println("//setup");
 #endif
+
+if (!ModbusRTUClient.begin(9600)) {
+    Serial.println("Failed to start Modbus RTU Client!");
+    while (1);
+  }
+
+//RS485Serial.begin(9600);
 
 	delay(100);
 
@@ -44,7 +56,17 @@ void setup() {
 }
 
 void loop() {
-	Modbus::loop();
+	/*if (!Serial.available())
+		return;
+
+	while (Serial.available()) {
+		Serial.print("[");
+		Serial.print(Serial.read());
+		Serial.print("]");
+		delayMicroseconds(1562);
+	}
+	Serial.println(";");*/
+	//Modbus::loop();
 
 	//Controller::loop();
 }

@@ -2,7 +2,7 @@
 
 ## Оборудование
 
-* [Gidrolock Ultimate](file:///D:/YandexDisk/Документы/Инструкции/Сантехника/GIDROLOCK_ULTIMATE_.pdf)
+* [Gidrolock Ultimate](https://gidrolock.ru/upload/iblock/274/yqozl28agq0eb50e2gosbfprjw13kbk4/Pasports_GIDROLOCK_ULTIMATE_2022_04_06_.pdf)
 
 ## Управление RS485
 
@@ -69,3 +69,32 @@ modbus_client -mrtu --debug -b9600 -d8 -pnone -s1 /dev/RS485 -a72 -t0x01 -r0x01
   _Датчик утечки газа_
 
   [Подключение и описание](https://portal-pk.ru/news/285-mq135-datchik-uglekislogo-gaza-biblioteka-mq135-arduino-library.html)
+
+## ТЗ
+
+Здравствуйте, возьметесь за задачу?
+
+Разработать принципиальную схему и спроектировать печатную плату управления шаровыми электроприводами. Управлять будет
+STM32 по RS485. Спецификация:
+
+- форм фактор платы - https://www.gainta.com/pdf/d3mg.pdf
+- необходимые выводы - https://disk.yandex.ru/i/4KrjHvHoEkx25w
+- шаровые электроприводы 2шт (3 pin, питание
+  12В) (https://gidrolock.ru/upload/iblock/274/yqozl28agq0eb50e2gosbfprjw13kbk4/Pasports_GIDROLOCK_ULTIMATE_2022_04_06_.pdf)
+- датчики протечки 2шт (2
+  pin) (https://www.vseinstrumenti.ru/santehnika/tovary-dlya-vannoj-komnaty-i-tualeta/aksessuary-dlya-vannoj-komnaty/datchiki-protechki-vody/datchiki-i-klapany/gidrolock/wsp-5-metrov-014544/)
+
+Здравствуйте, есть задача разработать принципиальную схему управления шаровыми электроприводами и обьяснить на ее
+примере принцип работы компонентов. Управлять будет STM32 по RS485.
+
+- необходимые выводы - https://disk.yandex.ru/i/4KrjHvHoEkx25w
+- шаровые электроприводы 2шт (3 pin, питание
+  12В) (https://gidrolock.ru/upload/iblock/274/yqozl28agq0eb50e2gosbfprjw13kbk4/Pasports_GIDROLOCK_ULTIMATE_2022_04_06_.pdf)
+
+
+есть 
+- шаровые электроприводы 2шт (питание
+12В) (https://gidrolock.ru/upload/iblock/274/yqozl28agq0eb50e2gosbfprjw13kbk4/Pasports_GIDROLOCK_ULTIMATE_2022_04_06_.pdf)
+- датчики протечки 2шт (https://www.vseinstrumenti.ru/santehnika/tovary-dlya-vannoj-komnaty-i-tualeta/aksessuary-dlya-vannoj-komnaty/datchiki-protechki-vody/datchiki-i-klapany/gidrolock/wsp-5-metrov-014544/)
+- линия RS485
+нужно сделать плату управления приводами на базе STM32, необходимые входы-выходы ниже
